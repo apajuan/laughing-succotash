@@ -68,10 +68,14 @@ export default async function Home() {
     return (
       <div className="container mx-auto py-10">
 
-        <h1 className="text-3xl font-bold">Log Data</h1>
-        <DataTable columns={columns_log} data={logdata} />
-        <h1 className="text-3xl font-bold">Card IDs</h1>
-        <DataTable columns={columns} data={carddata} />
+        <div className="px-64">
+          <h1 className="text-3xl font-bold">Log Data</h1>
+          <DataTable columns={columns_log} data={logdata} />
+        </div>
+        <div className="px-64">
+          <h1 className="text-3xl font-bold">Card IDs</h1>
+          <DataTable columns={columns} data={carddata} />
+        </div>
 
       </div>
 
