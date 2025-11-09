@@ -24,8 +24,9 @@ export default async function Home() {
           <Button className="rounded-full">Click me</Button>
         </div>
         <div>
-          <h2>Kill the databse</h2>
-
+          <h1 className="text-3xl font-extrabold text-amber-700">
+            Error. Database is down. Please try again later.
+          </h1>
         </div>
       </main>
     );
