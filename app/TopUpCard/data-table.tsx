@@ -44,18 +44,25 @@ import { Toaster } from "@/components/ui/sonner"
 import { toast } from "sonner"
 import { SendTopUp } from "@/app/TopUpCard/send"
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+interface HolderData {
+  CardID: string
+  FullName: string
+  Money: string
 }
 
-export function DataTable<TData, TValue>({
+interface DataTableProps<TValue> {
+  columns: ColumnDef<HolderData, TValue>[]
+  data: HolderData[]
+}
+
+export function DataTable<TValue>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
-  const [selectedUser, setSelectedUser] = React.useState<TData | null>(null)
+}: DataTableProps<TValue>) {
+  const [selectedUser, setSelectedUser] = React.useState<HolderData | null>(null)
   const [open, setOpen] = React.useState(false)
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
+
   const table = useReactTable({
     data,
     columns,
@@ -63,33 +70,28 @@ export function DataTable<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      columnFilters,
-    },
+    state: { columnFilters },
   })
 
-  const handleTopUpClick = (rowData: TData) => {
+  const handleTopUpClick = (rowData: HolderData) => {
     const topUpAmountObj = document.getElementById("topUpAmount") as HTMLInputElement
-    if (topUpAmountObj !== null) {
-      const data = rowData as unknown as { CardID: string, Money: string }
-      toast(data.CardID + " " + (parseFloat(topUpAmountObj.value) + parseFloat(data.Money)));
-      const total = parseFloat(topUpAmountObj.value) + parseFloat(data.Money)
-      SendTopUp(data.CardID, total.toString())
-      window.location.reload();
+    if (topUpAmountObj) {
+      const total = parseFloat(topUpAmountObj.value) + parseFloat(rowData.Money)
+      toast(`${rowData.CardID} ${total}`)
+      SendTopUp(rowData.CardID, total.toString())
+      window.location.reload()
     }
+  }
 
-
-  };
-  const handleRowClick = (rowData: TData) => {
-    const data = rowData as unknown as { CardID: string }
-    toast(data.CardID);
+  const handleRowClick = (rowData: HolderData) => {
+    toast(rowData.CardID)
     setSelectedUser(rowData)
-    setOpen(true);
-  };
+    setOpen(true)
+  }
 
   return (
     <div>
-      <Toaster></Toaster>
+      <Toaster />
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter names..."
@@ -105,23 +107,19 @@ export function DataTable<TData, TValue>({
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                    </TableHead>
-                  )
-                })}
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(header.column.columnDef.header, header.getContext())}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -145,6 +143,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
       <div className="flex items-center justify-end space-x-2 py-4">
         <Button
           variant="outline"
@@ -164,13 +163,13 @@ export function DataTable<TData, TValue>({
         </Button>
       </div>
 
+      {/* Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Top Up User</DialogTitle>
             <DialogDescription>
-              Top up user's card.
-              Please make sure to verify the proper amount before topping up.
+              Top up user's card. Please make sure to verify the amount before topping up.
             </DialogDescription>
           </DialogHeader>
 
@@ -210,12 +209,7 @@ export function DataTable<TData, TValue>({
 
                 <Field>
                   <FieldLabel htmlFor="amount-1">Top Up Amount</FieldLabel>
-                  <Input
-                    type="number"
-                    id="topUpAmount"
-                    name="amount"
-                    required
-                  />
+                  <Input type="number" id="topUpAmount" name="amount" required />
                   <FieldDescription>Enter the amount to top up.</FieldDescription>
                 </Field>
               </div>
@@ -225,9 +219,7 @@ export function DataTable<TData, TValue>({
               <DialogClose asChild>
                 <Button variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit">
-                Top Up
-              </Button>
+              <Button type="submit">Top Up</Button>
             </DialogFooter>
           </form>
         </DialogContent>
@@ -235,3 +227,4 @@ export function DataTable<TData, TValue>({
     </div>
   )
 }
+
