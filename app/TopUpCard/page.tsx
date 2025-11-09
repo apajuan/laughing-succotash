@@ -8,7 +8,9 @@ export default async function Home() {
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center py-16 px-16 bg-white dark:bg-black sm:items-start">
         <h1 className="font-bold text-xl">Top Up Cards</h1>
         <div>
-          <h2>Kill the database</h2>
+          <h1 className="text-3xl font-extrabold text-amber-700">
+            Error. Database is down. Please try again later.
+          </h1>
         </div>
       </main>
     );
