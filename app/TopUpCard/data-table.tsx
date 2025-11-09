@@ -71,16 +71,18 @@ export function DataTable<TData, TValue>({
   const handleTopUpClick = (rowData: TData) => {
     const topUpAmountObj = document.getElementById("topUpAmount") as HTMLInputElement
     if (topUpAmountObj !== null) {
-      toast(rowData.CardID + " " + (parseFloat(topUpAmountObj.value) + parseFloat(rowData.Money)));
-      const total = parseFloat(topUpAmountObj.value) + parseFloat(rowData.Money)
-      SendTopUp(rowData.CardID, total)
+      const data = rowData as unknown as { CardID: string, Money: string }
+      toast(data.CardID + " " + (parseFloat(topUpAmountObj.value) + parseFloat(data.Money)));
+      const total = parseFloat(topUpAmountObj.value) + parseFloat(data.Money)
+      SendTopUp(data.CardID, total.toString())
       window.location.reload();
     }
 
 
   };
   const handleRowClick = (rowData: TData) => {
-    toast(rowData.CardID);
+    const data = rowData as unknown as { CardID: string }
+    toast(data.CardID);
     setSelectedUser(rowData)
     setOpen(true);
   };
