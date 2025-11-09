@@ -1,8 +1,38 @@
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { createClient } from '@supabase/supabase-js'
-import { columns, Details } from '@/components/ui/columns'
+import { columns, Details, columns_log, LogDetails } from '@/components/ui/columns'
 import { DataTable } from "@/components/ui/data-table"
+
+async function getLogData(): Promise<LogDetails[]> {
+  try {
+    const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co'
+    const supabaseKey = process.env.SUPABASE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    if (!supabaseKey) {
+      throw new Error("SUPABASE_KEY is not defined in environment variables")
+    }
+
+
+    let { data: Holder, error } = await supabase
+      .from('ParkingLog')
+      .select('LogID, CardID, DateOfEntry, DateOfExit, TotalPrice, Status')
+
+    const safe = Holder ?? []
+    const formattedData = safe.map((item) => ({
+      id: item.CardID,
+      logid: item.LogID,
+      entry: item.DateOfEntry,
+      exit: item.DateOfExit,
+      total: item.TotalPrice,
+      status: item.Status,
+
+    }))
+    return formattedData
+  } catch {
+    return []
+  }
+}
 
 async function getData(): Promise<Details[]> {
   try {
@@ -33,12 +63,18 @@ async function getData(): Promise<Details[]> {
 export default async function Home() {
 
   try {
-    const data = await getData();
+    const carddata = await getData();
+    const logdata = await getLogData();
     return (
       <div className="container mx-auto py-10">
-        <h1 className="text-3xl">Card IDs</h1>
-        <DataTable columns={columns} data={data} />
+
+        <h1 className="text-3xl font-bold">Log Data</h1>
+        <DataTable columns={columns_log} data={logdata} />
+        <h1 className="text-3xl font-bold">Card IDs</h1>
+        <DataTable columns={columns} data={carddata} />
+
       </div>
+
     );
   }
   catch {
