@@ -1,28 +1,41 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { columns } from "./columns"
+import { columns, Details } from "./columns"
+import { DataTable } from "./data-table"
+import { createClient } from "@supabase/supabase-js"
 
-export default async function Home() {
+async function getData(): Promise<Details[]> {
+  // Fetch data from your API here.
   try {
-    return (
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center py-16 px-16 bg-white dark:bg-black sm:items-start">
-        <h1 className="font-bold text-xl">Top Up Cards</h1>
-        <div>
-          <h1 className="text-3xl font-extrabold text-amber-700">
-            Error. Database is down. Please try again later.
-          </h1>
-        </div>
-      </main>
-    );
+    const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co'
+    const supabaseKey = process.env.SUPABASE_KEY!
+    const supabase = createClient(supabaseUrl, supabaseKey)
+    if (!supabaseKey) {
+      throw new Error("SUPABASE_KEY is not defined in environment variables")
+    }
+
+
+    let { data: Holder, error } = await supabase
+      .from('Holder')
+      .select('CardID, FullName, Money')
+
+    const safe = Holder ?? []
+    const formattedData = safe.map((item) => ({
+      id: item.CardID,
+      name: item.FullName,
+      balance: item.Money,
+    }))
+    return formattedData
   } catch {
-    return (
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <div>
-          <h1 className="text-3xl font-extrabold text-amber-700">
-            Error. Database is down. Please try again later.
-          </h1>
-        </div>
-      </main>
-    );
+    return []
   }
+  // ...
+}
+
+export default async function DemoPage() {
+  const data = await getData()
+
+  return (
+    <div className="container mx-auto py-10">
+      <DataTable columns={columns} data={data} />
+    </div>
+  )
 }
