@@ -10,7 +10,11 @@ export default async function Home() {
 
     const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co'
     const supabaseKey = process.env.SUPABASE_KEY
+    if (!supabaseKey) {
+      throw new Error("SUPABASE_KEY is not defined in environment variables")
+    }
     const supabase = createClient(supabaseUrl, supabaseKey)
+
 
     //const res = await fetch('http://localhost/IT155P/wemos/getAllUsers.php')
     //const data = await res.json();
@@ -20,11 +24,8 @@ export default async function Home() {
           <Button className="rounded-full">Click me</Button>
         </div>
         <div>
-          <ul>
-            {data.map((item: any) => (
-              <li key={item.CardID}>{item.SN_Holder_Name} {item.GN_Holder_Name}</li>
-            ))}
-          </ul>
+          <h2>Kill the databse</h2>
+
         </div>
       </main>
     );
