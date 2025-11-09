@@ -21,9 +21,6 @@ export default async function Home() {
     return (
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <div>
-          <Button className="rounded-full">Click me</Button>
-        </div>
-        <div>
           <h1 className="text-3xl font-extrabold text-amber-700">
             Error. Database is down. Please try again later.
           </h1>
