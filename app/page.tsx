@@ -4,7 +4,15 @@ import { useEffect, useState } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { DataTable } from "@/components/ui/data-table";
 import { columns, columns_log, Details, LogDetails } from "@/components/ui/columns";
-
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty"
+import { Spinner } from "@/components/ui/spinner"
 const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
@@ -77,9 +85,17 @@ export default function Home() {
     };
   }, []);
   if (loading) return (
-    <div className="container mx-auto py-10 text-3xl font-bold accent-amber-700">
-      <p>Loading...</p>
-    </div>
+    <Empty className="w-full">
+      <EmptyHeader>
+        <Spinner className="size-10" />
+        <EmptyTitle>Processing your request</EmptyTitle>
+        <EmptyDescription>
+          Please wait while we process your request.
+        </EmptyDescription>
+      </EmptyHeader>
+      <EmptyContent>
+      </EmptyContent>
+    </Empty>
 
   );
 
