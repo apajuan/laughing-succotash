@@ -52,6 +52,7 @@ export default function Home() {
 
   useEffect(() => {
     // Create a channel for the ParkingLog table
+    fetchData()
     const channel = supabase
       .channel('public:ParkingLog') // channel name (can be any string)
       .on(
