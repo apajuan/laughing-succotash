@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import { Toaster } from "sonner"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
@@ -30,10 +31,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+
+        <Toaster position="top-center" richColors={true} />
         <SidebarProvider>
           <AppSidebar></AppSidebar>
           <SidebarTrigger></SidebarTrigger>
-        {children}
+          {children}
         </SidebarProvider>
 
       </body>

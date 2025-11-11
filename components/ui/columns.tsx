@@ -3,6 +3,7 @@
 import { ArrowUpDown } from "lucide-react"
 import { ColumnDef } from "@tanstack/react-table"
 import { Button } from "./button"
+import { toast } from "sonner"
 import { MoreHorizontal } from "lucide-react"
 import { useState } from "react"
 import { Input } from "@/components/ui/input"
@@ -107,6 +108,7 @@ export const columns: ColumnDef<Details>[] = [
 
       return (
         <div className="flex justify-end px-6">
+
           {/* Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -137,7 +139,6 @@ export const columns: ColumnDef<Details>[] = [
               >View customer details</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-
           <AlertDialog open={openDeets} onOpenChange={setOpenDeets}>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -199,6 +200,8 @@ export const columns: ColumnDef<Details>[] = [
                   <Input
                     type="number"
                     placeholder="Enter amount"
+                    min="1"
+                    required={true}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
@@ -222,17 +225,23 @@ export const columns: ColumnDef<Details>[] = [
                   onClick={() => {
                     console.log("Top up confirmed for", formData.id)
                     const total = formData.balance + formData.topupAmount!
-                    const pushData = async () => {
-                      const { data, error } = await supabase
-                        .from('Holder')
-                        .update({ Money: total })
-                        .eq('CardID', formData.id)
-                        .select()
-                      console.log(data)
-                      console.log(error)
+
+                    if (total < 0) {
+                      toast.error("The user has debt!", { description: "Top up a higher amount to continue." })
+                    } else {
+                      const pushData = async () => {
+                        const { data, error } = await supabase
+                          .from('Holder')
+                          .update({ Money: total })
+                          .eq('CardID', formData.id)
+                          .select()
+                        console.log(data)
+                        console.log(error)
+                        toast.success("Top up success!", { description: "User " + formData.name + " has topped up " + formData.topupAmount + "!" })
+                        setOpen(false)
+                      }
+                      pushData();
                     }
-                    pushData();
-                    setOpen(false)
                   }}
                 >
                   Confirm

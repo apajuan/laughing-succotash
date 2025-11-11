@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner"
+import { Check } from "lucide-react";
 import {
   Field,
   FieldContent,
@@ -22,6 +24,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { createClient } from '@supabase/supabase-js';
+import { toast } from "sonner"
 
 const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
@@ -90,6 +93,7 @@ export default function FieldResponsive() {
       const recent = await getRecentID()
       if (recent) setrecentID(recent)
       setSuccessDialogOpen(true);
+      handleClearForm()
       return data;
     } catch (error) {
       console.error("Database error:", error);
@@ -194,7 +198,17 @@ export default function FieldResponsive() {
                   Provide the initial balance for this card
                 </FieldDescription>
               </FieldContent>
-              <Input type="number" id="balance" placeholder="100" required />
+              <Input
+                type="number"
+                id="balance"
+                placeholder="100"
+                min="0"
+                onKeyDown={(event) => {
+                  if (!/[0-9]/.test(event.key)) {
+                    event.preventDefault();
+                  }
+                }}
+                required />
             </Field>
 
             <FieldSeparator />
@@ -273,6 +287,17 @@ export default function FieldResponsive() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Writing to card...</AlertDialogTitle>
+
+            <div className="relative flex justify-center py-5 w-10 h-10 mx-auto">
+              <Spinner
+                className={`absolute inset-0 size-8 transition-all duration-500 ease-in-out 
+              ${!isDisabled ? "opacity-0 scale-50" : "opacity-100 scale-100"}`}
+              />
+              <Check
+                className={`absolute inset-0 w-10 h-10 text-green-500 transition-all duration-500 ease-in-out 
+              ${!isDisabled ? "opacity-100 scale-100" : "opacity-0 scale-50"}`}
+              />
+            </div>
             <AlertDialogDescription>
               Please place the card to write its ID. Wait for 10 seconds before removing the card or closing this dialoge.
             </AlertDialogDescription>

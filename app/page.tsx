@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { DataTable } from "@/components/ui/data-table";
+import { toast, Toaster } from "sonner"
 import { columns, columns_log, Details, LogDetails } from "@/components/ui/columns";
 import {
   Empty,
