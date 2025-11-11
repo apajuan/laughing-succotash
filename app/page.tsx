@@ -1,96 +1,89 @@
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { createClient } from '@supabase/supabase-js'
-import { columns, Details, columns_log, LogDetails } from '@/components/ui/columns'
-import { DataTable } from "@/components/ui/data-table"
+"use client";
 
-async function getLogData(): Promise<LogDetails[]> {
-  try {
-    const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co'
-    const supabaseKey = process.env.SUPABASE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    if (!supabaseKey) {
-      throw new Error("SUPABASE_KEY is not defined in environment variables")
-    }
+import { useEffect, useState } from "react";
+import { createClient } from '@supabase/supabase-js';
+import { DataTable } from "@/components/ui/data-table";
+import { columns, columns_log, Details, LogDetails } from "@/components/ui/columns";
 
+const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-    let { data: Holder, error } = await supabase
-      .from('ParkingLog')
-      .select('LogID, CardID, DateOfEntry, DateOfExit, TotalPrice, Status')
+const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const safe = Holder ?? []
-    const formattedData = safe.map((item) => ({
-      id: item.CardID,
-      logid: item.LogID,
-      entry: item.DateOfEntry,
-      exit: item.DateOfExit,
-      total: item.TotalPrice,
-      status: item.Status,
+export default function Home() {
+  const [cardData, setCardData] = useState<Details[]>([]);
+  const [logData, setLogData] = useState<LogDetails[]>([]);
+  const [loading, setLoading] = useState(true);
 
-    }))
-    return formattedData
-  } catch {
-    return []
-  }
-}
+  const fetchData = async () => {
+    setLoading(true);
 
-async function getData(): Promise<Details[]> {
-  try {
-    const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co'
-    const supabaseKey = process.env.SUPABASE_KEY!
-    const supabase = createClient(supabaseUrl, supabaseKey)
-    if (!supabaseKey) {
-      throw new Error("SUPABASE_KEY is not defined in environment variables")
-    }
-
-
-    let { data: Holder, error } = await supabase
+    // Fetch Holder data
+    const { data: holders } = await supabase
       .from('Holder')
-      .select('CardID, FullName, Money')
+      .select('CardID, FullName, Money');
 
-    const safe = Holder ?? []
-    const formattedData = safe.map((item) => ({
-      id: item.CardID,
-      name: item.FullName,
-      balance: item.Money,
-    }))
-    return formattedData
-  } catch {
-    return []
-  }
-}
+    setCardData(
+      (holders ?? []).map(item => ({
+        id: item.CardID,
+        name: item.FullName,
+        balance: item.Money,
+      }))
+    );
 
-export default async function Home() {
+    // Fetch ParkingLog data
+    const { data: logs } = await supabase
+      .from('ParkingLog')
+      .select('LogID, CardID, DateOfEntry, DateOfExit, TotalPrice, Status');
 
-  try {
-    const carddata = await getData();
-    const logdata = await getLogData();
-    return (
-      <div className="container mx-auto py-10">
+    setLogData(
+      (logs ?? []).map(item => ({
+        id: item.CardID,
+        logid: item.LogID,
+        entry: item.DateOfEntry,
+        exit: item.DateOfExit,
+        total: item.TotalPrice,
+        status: item.Status,
+      }))
+    );
 
-        <div className="px-32">
-          <h1 className="text-3xl font-bold">Log Data</h1>
-          <DataTable columns={columns_log} data={logdata} />
-        </div>
-        <div className="px-32">
-          <h1 className="text-3xl font-bold">Card IDs</h1>
-          <DataTable columns={columns} data={carddata} />
-        </div>
+    setLoading(false);
+  };
 
+  useEffect(() => {
+    // Create a channel for the ParkingLog table
+    const channel = supabase
+      .channel('public:ParkingLog') // channel name (can be any string)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ParkingLog' },
+        () => fetchData() // refetch on any insert/update/delete
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+  if (loading) return (
+    <div className="container mx-auto py-10 text-3xl font-bold accent-amber-700">
+      <p>Loading...</p>
+    </div>
+
+  );
+
+  return (
+    <div className="container mx-auto py-10">
+      <div className="px-32">
+        <h1 className="text-3xl font-bold">Log Data</h1>
+        <DataTable columns={columns_log} data={logData} />
       </div>
 
-    );
-  }
-  catch {
-    return (
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <div>
-          <h1 className="text-3xl font-extrabold text-amber-700">
-            Error. Database is down. Please try again later.
-          </h1>
-        </div>
-      </main>
-    );
-  }
-
+      <div className="px-32">
+        <h1 className="text-3xl font-bold">Card IDs</h1>
+        <DataTable columns={columns} data={cardData} />
+      </div>
+    </div>
+  );
 }
+
