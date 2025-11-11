@@ -91,6 +91,7 @@ export const columns: ColumnDef<Details>[] = [
     cell: ({ row }) => {
       const rowData = row.original
       const [open, setOpen] = useState(false)
+      const [openDeets, setOpenDeets] = useState(false)
 
       const [formData, setFormData] = useState<{
         id: string
@@ -131,9 +132,44 @@ export const columns: ColumnDef<Details>[] = [
                 Top Up Customer
               </DropdownMenuItem>
 
-              <DropdownMenuItem>View customer details</DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setOpenDeets(true)}
+              >View customer details</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          <AlertDialog open={openDeets} onOpenChange={setOpenDeets}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Customer Details</AlertDialogTitle>
+                <AlertDialogDescription>
+                  View customer details and information
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+
+              <div className="space-y-3 py-4">
+                <div>
+                  <label className="text-sm font-medium">Card ID</label>
+                  <Input value={formData.id} disabled />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Name</label>
+                  <Input value={formData.name} disabled />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Current Balance</label>
+                  <Input value={formData.balance} disabled />
+                </div>
+              </div>
+
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setOpen(false)}>
+                  Close
+                </AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+
 
           {/* Top Up Dialog */}
           <AlertDialog open={open} onOpenChange={setOpen}>
@@ -295,10 +331,6 @@ export const columns_log: ColumnDef<LogDetails>[] = [
               >
                 Copy Cusomter ID
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-              >Top Up Customer</DropdownMenuItem>
-              <DropdownMenuItem>View customer details</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
