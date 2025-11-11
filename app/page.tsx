@@ -62,8 +62,17 @@ export default function Home() {
       )
       .subscribe();
 
+    const holderChannel = supabase
+      .channel('public:Holder')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'Holder' }, () => {
+        console.log('Holder updated');
+        fetchData();
+      })
+      .subscribe();
+
     return () => {
       supabase.removeChannel(channel);
+      supabase.removeChannel(holderChannel);
     };
   }, []);
   if (loading) return (
