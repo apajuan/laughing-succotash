@@ -18,6 +18,7 @@ export type Details = {
   id: string
   name: string
   balance: number
+  createdAt: string
 }
 
 export type LogDetails = {
@@ -56,6 +57,20 @@ export const columns: ColumnDef<Details>[] = [
           onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
         >
           Balance
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      )
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Created At
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       )

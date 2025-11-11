@@ -25,7 +25,6 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co';
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 function Capitalize(str: string) {
@@ -35,6 +34,31 @@ export default function FieldResponsive() {
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [successCreateDialogOpen, setCreateSuccessDialogOpen] = useState(false);
+  const [isDisabled, setisDisabled] = useState(false);
+  const [recentID, setrecentID] = useState("");
+
+  const getRecentID = async (): Promise<string | null> => {
+    try {
+      let { data, error } = await supabase
+        .from('Holder')
+        .select('CardID')
+        .order('datetimeissued', { ascending: false })
+        .limit(1)
+        .single()
+
+      if (data) {
+        return "Most Recent ID: " + data.CardID
+      }
+
+      console.log(data)
+      return "No ID Found"
+
+
+
+    } catch {
+      return "None"
+    }
+  };
 
 
   const handleSubmit = async (
@@ -63,6 +87,8 @@ export default function FieldResponsive() {
       }
 
       console.log("User created:", data);
+      const recent = await getRecentID()
+      if (recent) setrecentID(recent)
       setSuccessDialogOpen(true);
       return data;
     } catch (error) {
@@ -88,7 +114,8 @@ export default function FieldResponsive() {
         throw new Error("Network response was not ok");
       }
 
-      console.log("User created:", data);
+      setisDisabled(true)
+      setTimeout(() => setisDisabled(false), 10000)
       setCreateSuccessDialogOpen(true);
       return data;
     } catch (error) {
@@ -192,20 +219,18 @@ export default function FieldResponsive() {
         <FieldSet>
           <FieldLegend>Write to RFID Card</FieldLegend>
           <FieldDescription>Fill in the Card ID to write</FieldDescription>
+          <FieldDescription>{recentID}</FieldDescription>
           <FieldSeparator />
           <FieldGroup>
             <Field orientation="responsive">
               <FieldContent>
-                <FieldLabel htmlFor="firstName">Card ID</FieldLabel>
+                <FieldLabel htmlFor="cardIDFor">Card ID</FieldLabel>
               </FieldContent>
               <Input id="cardID" placeholder="abc123ABC" required />
             </Field>
             <FieldSeparator />
             <Field orientation="responsive" className="justify-end">
               <Button type="submit">Write</Button>
-              <Button type="button" variant="outline" onClick={handleClearForm}>
-                Cancel
-              </Button>
             </Field>
           </FieldGroup>
         </FieldSet>
@@ -247,14 +272,16 @@ export default function FieldResponsive() {
       <AlertDialog open={successCreateDialogOpen} onOpenChange={setCreateSuccessDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Writing to card!</AlertDialogTitle>
+            <AlertDialogTitle>Writing to card...</AlertDialogTitle>
             <AlertDialogDescription>
-              Please wait a moment for the card to write...
+              Please place the card to write its ID. Wait for 10 seconds before removing the card or closing this dialoge.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogAction onClick={() => setErrorDialogOpen(false)}>
-              Close
+            <AlertDialogAction onClick={() => setErrorDialogOpen(false)} asChild>
+              <Button disabled={isDisabled}>
+                {isDisabled ? 'Wait for 10 seconds...' : 'Close'}
+              </Button>
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

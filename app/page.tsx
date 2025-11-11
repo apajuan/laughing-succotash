@@ -21,13 +21,14 @@ export default function Home() {
     // Fetch Holder data
     const { data: holders } = await supabase
       .from('Holder')
-      .select('CardID, FullName, Money');
+      .select('CardID, FullName, Money, datetimeissued');
 
     setCardData(
       (holders ?? []).map(item => ({
         id: item.CardID,
         name: item.FullName,
         balance: item.Money,
+        createdAt: item.datetimeissued,
       }))
     );
 
