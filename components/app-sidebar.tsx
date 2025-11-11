@@ -22,21 +22,6 @@ const items = [
     url: "/CreateCard",
     icon: IdCard,
   },
-  {
-    title: "Top-up Card",
-    url: "/TopUpCard",
-    icon: Wallet,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
 ]
 
 export function AppSidebar() {
