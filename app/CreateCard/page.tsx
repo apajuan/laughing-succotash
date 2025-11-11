@@ -21,10 +21,21 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { createClient } from '@supabase/supabase-js';
 
+const supabaseUrl = 'https://fekycnmoyqkpjxklsdrv.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+function Capitalize(str: string) {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
+}
 export default function FieldResponsive() {
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [successCreateDialogOpen, setCreateSuccessDialogOpen] = useState(false);
+
 
   const handleSubmit = async (
     initialBalance: string,
@@ -33,16 +44,52 @@ export default function FieldResponsive() {
     lastName: string
   ) => {
     try {
-      const api = `http://localhost/IT155P/wemos/makeUser.php?initialBalance=${initialBalance}&firstName=${firstName}&middleInitial=${middleInitial}&lastName=${lastName}`;
-      const res = await fetch(api);
 
-      if (!res.ok) {
+      const { data, error } = await supabase
+        .from('Holder')
+        .insert([
+          {
+            Money: Capitalize(initialBalance),
+            SN_Holder_Name: Capitalize(lastName),
+            GN_Holder_Name: Capitalize(firstName),
+            MI_Holder_Name: middleInitial.toUpperCase(),
+          },
+        ])
+        .select()
+
+      if (error) {
+        console.log("error!");
         throw new Error("Network response was not ok");
       }
 
-      const data = await res.json();
       console.log("User created:", data);
       setSuccessDialogOpen(true);
+      return data;
+    } catch (error) {
+      console.error("Database error:", error);
+      setErrorDialogOpen(true);
+    }
+  };
+
+  const handleCreateCard = async (
+    id: string,
+  ) => {
+    try {
+
+      const { data, error } = await supabase
+        .from('WriteCard')
+        .update({ id: id })
+        .eq('status', true)
+        .select()
+
+      if (error) {
+        console.log("error!");
+        console.log(error);
+        throw new Error("Network response was not ok");
+      }
+
+      console.log("User created:", data);
+      setCreateSuccessDialogOpen(true);
       return data;
     } catch (error) {
       console.error("Database error:", error);
@@ -57,6 +104,7 @@ export default function FieldResponsive() {
 
   return (
     <div className="w-full max-w-4xl py-20 p-16">
+
       <form
         onSubmit={(e) => {
           e.preventDefault();
@@ -133,6 +181,37 @@ export default function FieldResponsive() {
           </FieldGroup>
         </FieldSet>
       </form>
+      <FieldSeparator className="py-16" />
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          const card = document.getElementById("cardID") as HTMLInputElement
+          handleCreateCard(card.value)
+        }}
+      >
+        <FieldSet>
+          <FieldLegend>Write to RFID Card</FieldLegend>
+          <FieldDescription>Fill in the Card ID to write</FieldDescription>
+          <FieldSeparator />
+          <FieldGroup>
+            <Field orientation="responsive">
+              <FieldContent>
+                <FieldLabel htmlFor="firstName">Card ID</FieldLabel>
+              </FieldContent>
+              <Input id="cardID" placeholder="abc123ABC" required />
+            </Field>
+            <FieldSeparator />
+            <Field orientation="responsive" className="justify-end">
+              <Button type="submit">Write</Button>
+              <Button type="button" variant="outline" onClick={handleClearForm}>
+                Cancel
+              </Button>
+            </Field>
+          </FieldGroup>
+        </FieldSet>
+      </form>
+
+
 
       <AlertDialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
         <AlertDialogContent>
@@ -155,6 +234,22 @@ export default function FieldResponsive() {
             <AlertDialogTitle>Created Successfully!</AlertDialogTitle>
             <AlertDialogDescription>
               User has been created successfully.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialogOpen(false)}>
+              Close
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={successCreateDialogOpen} onOpenChange={setCreateSuccessDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Writing to card!</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please wait a moment for the card to write...
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
