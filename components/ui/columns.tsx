@@ -37,7 +37,9 @@ export type Details = {
   balance: number
   createdAt: string
 }
-
+export type Write = {
+  id: string
+}
 export type LogDetails = {
   id: string
   logid: string
@@ -46,6 +48,13 @@ export type LogDetails = {
   total: number
   status: string
 }
+export const columns_write: ColumnDef<Write>[] = [
+  {
+    accessorKey: "id",
+    header: "Card To Write ID",
+  },
+]
+
 export const columns: ColumnDef<Details>[] = [
   {
     accessorKey: "id",

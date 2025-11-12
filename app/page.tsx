@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createClient } from '@supabase/supabase-js';
 import { DataTable } from "@/components/ui/data-table";
 import { toast, Toaster } from "sonner"
-import { columns, columns_log, Details, LogDetails } from "@/components/ui/columns";
+import { columns, columns_log, columns_write, Details, LogDetails, Write } from "@/components/ui/columns";
 import {
   Empty,
   EmptyContent,
@@ -22,6 +22,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 export default function Home() {
   const [cardData, setCardData] = useState<Details[]>([]);
   const [logData, setLogData] = useState<LogDetails[]>([]);
+  const [writeData, setWriteData] = useState<Write[]>([]);
   const [loading, setLoading] = useState(true);
 
   const fetchData = async () => {
@@ -57,12 +58,32 @@ export default function Home() {
       }))
     );
 
+    const { data: write } = await supabase
+      .from('WriteCard')
+      .select('id');
+
+    setWriteData(
+      (write ?? []).map(item => ({
+        id: item.id
+      }))
+    );
+
+
     setLoading(false);
   };
 
   useEffect(() => {
     // Create a channel for the ParkingLog table
     fetchData()
+    const writeChannel = supabase
+      .channel('public:WriteCard') // channel name (can be any string)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'ParkingLog' },
+        () => fetchData() // refetch on any insert/update/delete
+      )
+      .subscribe();
+
     const channel = supabase
       .channel('public:ParkingLog') // channel name (can be any string)
       .on(
@@ -83,6 +104,7 @@ export default function Home() {
     return () => {
       supabase.removeChannel(channel);
       supabase.removeChannel(holderChannel);
+      supabase.removeChannel(writeChannel);
     };
   }, []);
   if (loading) return (
@@ -110,6 +132,10 @@ export default function Home() {
       <div className="px-32">
         <h1 className="text-3xl font-bold">Card IDs</h1>
         <DataTable columns={columns} data={cardData} />
+      </div>
+      <div className="px-32">
+        <h1 className="text-3xl font-bold">Log Data</h1>
+        <DataTable columns={columns_write} data={writeData} />
       </div>
     </div>
   );
