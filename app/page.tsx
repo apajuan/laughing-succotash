@@ -134,7 +134,7 @@ export default function Home() {
         <DataTable columns={columns} data={cardData} />
       </div>
       <div className="px-32">
-        <h1 className="text-3xl font-bold">Log Data</h1>
+        <h1 className="text-3xl font-bold">Card Write ID Preview</h1>
         <DataTable columns={columns_write} data={writeData} />
       </div>
     </div>
